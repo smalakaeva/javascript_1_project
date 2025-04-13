@@ -1,4 +1,3 @@
-// api.js
 const config = {
   baseUrl: "https://nomoreparties.co/v1/apf-cohort-202",
   headers: {
@@ -7,75 +6,66 @@ const config = {
   },
 };
 
-// Проверка ответа сервера
-function checkResponse(res) {
-  if (res.ok) {
-    return res.json();
+function handleResponse(res) {
+  if (!res.ok) {
+    return Promise.reject(`Ошибка: ${res.status}`);
   }
-  return Promise.reject(`Ошибка: ${res.status}`);
+  return res.json();
 }
 
-// Загрузка профиля
 export const getProfileData = () => {
   return fetch(`${config.baseUrl}/users/me`, {
     headers: config.headers,
-  }).then(checkResponse);
+  }).then(handleResponse);
 };
 
-// Загрузка карточек
 export const getCards = () => {
   return fetch(`${config.baseUrl}/cards`, {
     headers: config.headers,
-  }).then(checkResponse);
+  }).then(handleResponse);
 };
 
-// Обновление профиля
 export const updateProfile = (name, about) => {
   return fetch(`${config.baseUrl}/users/me`, {
     method: "PATCH",
     headers: config.headers,
     body: JSON.stringify({ name, about }),
-  }).then(checkResponse);
+  }).then(handleResponse);
 };
 
-// Добавление карточки
 export const addCard = (name, link) => {
   return fetch(`${config.baseUrl}/cards`, {
     method: "POST",
     headers: config.headers,
     body: JSON.stringify({ name, link }),
-  }).then(checkResponse);
+  }).then(handleResponse);
 };
 
-// Удаление карточки
 export const deleteCard = (cardId) => {
   return fetch(`${config.baseUrl}/cards/${cardId}`, {
     method: "DELETE",
     headers: config.headers,
-  }).then(checkResponse);
+  }).then(handleResponse);
 };
 
-// Лайк карточки
 export const likeCard = (cardId) => {
   return fetch(`${config.baseUrl}/cards/likes/${cardId}`, {
     method: "PUT",
     headers: config.headers,
-  }).then(checkResponse);
+  }).then(handleResponse);
 };
 
-// Снятие лайка
 export const unlikeCard = (cardId) => {
   return fetch(`${config.baseUrl}/cards/likes/${cardId}`, {
     method: "DELETE",
     headers: config.headers,
-  }).then(checkResponse);
+  }).then(handleResponse);
 };
 
-// Обновление аватара
 export const updateAvatar = (avatarUrl) => {
   return fetch(`${config.baseUrl}/users/me/avatar`, {
     method: "PATCH",
     headers: config.headers,
     body: JSON.stringify({ avatar: avatarUrl }),
-  }).then(checkResponse);
+  }).then(handleResponse);
 };
