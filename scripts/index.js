@@ -22,15 +22,13 @@ const imagePopup = document.querySelector(".popup_type_image");
 const avatarPopup = document.querySelector(".popup_type_avatar");
 
 // Формы
-const profileForm = document.querySelector(".popup__form[name='edit-profile']");
-const cardForm = document.querySelector(".popup__form[name='new-place']");
-const avatarForm = document.querySelector(".popup__form[name='edit-avatar']");
+const profileForm = document.querySelector('[name="edit-profile"]');
+const cardForm = document.querySelector('[name="new-place"]');
+const avatarForm = document.querySelector('[name="edit-avatar"]');
 
 // Инпуты
 const nameInput = document.querySelector(".popup__input_type_name");
 const jobInput = document.querySelector(".popup__input_type_description");
-const cardNameInput = document.querySelector(".popup__input_type_card-name");
-const cardUrlInput = document.querySelector(".popup__input_type_url");
 const avatarUrlInput = document.querySelector(".popup__input_type_avatar-url");
 
 // Кнопки
@@ -135,6 +133,66 @@ function createCard(cardData, currentUserId) {
   return cardElement;
 }
 
+// Валидация форм
+function showInputError(formElement, inputElement, errorMessage) {
+  const errorElement = formElement.querySelector(`.${inputElement.id}-error`);
+  inputElement.classList.add("popup__input_type_error");
+  errorElement.textContent = errorMessage;
+  errorElement.classList.add("popup__input-error_active");
+}
+
+function hideInputError(formElement, inputElement) {
+  const errorElement = formElement.querySelector(`.${inputElement.id}-error`);
+  inputElement.classList.remove("popup__input_type_error");
+  errorElement.classList.remove("popup__input-error_active");
+  errorElement.textContent = "";
+}
+
+function checkInputValidity(formElement, inputElement) {
+  if (!inputElement.validity.valid) {
+    showInputError(formElement, inputElement, inputElement.validationMessage);
+  } else {
+    hideInputError(formElement, inputElement);
+  }
+}
+
+function hasInvalidInput(inputList) {
+  return inputList.some((inputElement) => {
+    return !inputElement.validity.valid;
+  });
+}
+
+function toggleButtonState(inputList, buttonElement) {
+  if (hasInvalidInput(inputList)) {
+    buttonElement.disabled = true;
+    buttonElement.classList.add("popup__button_disabled");
+  } else {
+    buttonElement.disabled = false;
+    buttonElement.classList.remove("popup__button_disabled");
+  }
+}
+
+function setEventListeners(formElement) {
+  const inputList = Array.from(formElement.querySelectorAll(".popup__input"));
+  const buttonElement = formElement.querySelector(".popup__button");
+
+  // Активируем кнопку при открытии попапа аватара
+  if (formElement === avatarForm) {
+    buttonElement.disabled = false;
+    buttonElement.classList.remove("popup__button_disabled");
+  }
+
+  inputList.forEach((inputElement) => {
+    inputElement.addEventListener("input", () => {
+      checkInputValidity(formElement, inputElement);
+      toggleButtonState(inputList, buttonElement);
+    });
+  });
+}
+
+// Включение валидации всех форм
+document.querySelectorAll(".popup__form").forEach(setEventListeners);
+
 // Загрузка начальных данных
 let currentUserId;
 
@@ -151,7 +209,7 @@ Promise.all([getProfileData(), getCards()])
   })
   .catch((err) => console.error("Ошибка загрузки данных:", err));
 
-// Обработчики форм
+// Обработчики открытия попапов
 editButton.addEventListener("click", () => {
   nameInput.value = profileTitle.textContent;
   jobInput.value = profileDesc.textContent;
@@ -165,10 +223,14 @@ addButton.addEventListener("click", () => {
 
 avatarEditButton.addEventListener("click", () => {
   avatarForm.reset();
+  // Активируем кнопку при открытии попапа
+  const avatarSubmitButton = avatarForm.querySelector(".popup__button");
+  avatarSubmitButton.disabled = false;
+  avatarSubmitButton.classList.remove("popup__button_disabled");
   openModal(avatarPopup);
 });
 
-// Отправка форм
+// Обработчики отправки форм
 profileForm.addEventListener("submit", (evt) => {
   evt.preventDefault();
   const submitButton = evt.submitter;
@@ -189,7 +251,10 @@ cardForm.addEventListener("submit", (evt) => {
   const submitButton = evt.submitter;
   submitButton.textContent = "Создание...";
 
-  addCard(cardNameInput.value, cardUrlInput.value)
+  const cardName = cardForm.querySelector(".popup__input_type_card-name").value;
+  const cardUrl = cardForm.querySelector(".popup__input_type_url").value;
+
+  addCard(cardName, cardUrl)
     .then((card) => {
       placesList.prepend(createCard(card, currentUserId));
       cardForm.reset();
@@ -199,6 +264,7 @@ cardForm.addEventListener("submit", (evt) => {
     .finally(() => (submitButton.textContent = "Создать"));
 });
 
+// Обработчик обновления аватара
 avatarForm.addEventListener("submit", (evt) => {
   evt.preventDefault();
   const submitButton = evt.submitter;
@@ -211,41 +277,4 @@ avatarForm.addEventListener("submit", (evt) => {
     })
     .catch((err) => console.error("Ошибка обновления аватара:", err))
     .finally(() => (submitButton.textContent = "Сохранить"));
-});
-
-// Проект 2
-//1. Валидация формы «Редактировать профиль»
-const profileForm1 = document.querySelector(".popup__form");
-const formInputs = profileForm.querySelectorAll(".popup__input");
-
-// Функция показа ошибки
-function showInputError(input, errorMessage) {
-  const formError = profileForm1.querySelector(`.${input.id}-error`);
-  input.classList.add("form__input_type_error");
-  formError.textContent = errorMessage;
-  formError.classList.add("form__input-error_active");
-}
-
-// Функция скрытия ошибки
-function hideInputError(input) {
-  const formError = profileForm1.querySelector(`.${input.id}-error`);
-  input.classList.remove("form__input_type_error");
-  formError.classList.remove("form__input-error_active");
-  formError.textContent = "";
-}
-
-// Функция проверки валидности
-function isValid(input) {
-  if (!input.validity.valid) {
-    showInputError(input, input.validationMessage);
-  } else {
-    hideInputError(input);
-  }
-}
-
-// Добавляем слушатели на все поля
-formInputs.forEach(function (input) {
-  input.addEventListener("input", function () {
-    isValid(input);
-  });
 });

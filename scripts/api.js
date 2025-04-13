@@ -29,7 +29,10 @@ export const updateProfile = (name, about) => {
   return fetch(`${config.baseUrl}/users/me`, {
     method: "PATCH",
     headers: config.headers,
-    body: JSON.stringify({ name, about }),
+    body: JSON.stringify({
+      name: name,
+      about: about,
+    }),
   }).then(handleResponse);
 };
 
@@ -37,7 +40,10 @@ export const addCard = (name, link) => {
   return fetch(`${config.baseUrl}/cards`, {
     method: "POST",
     headers: config.headers,
-    body: JSON.stringify({ name, link }),
+    body: JSON.stringify({
+      name: name,
+      link: link,
+    }),
   }).then(handleResponse);
 };
 
@@ -66,6 +72,8 @@ export const updateAvatar = (avatarUrl) => {
   return fetch(`${config.baseUrl}/users/me/avatar`, {
     method: "PATCH",
     headers: config.headers,
-    body: JSON.stringify({ avatar: avatarUrl }),
+    body: JSON.stringify({
+      avatar: avatarUrl,
+    }),
   }).then(handleResponse);
 };
